@@ -1,0 +1,38 @@
+[
+{
+  "directory": "/home/levi/Documents/MusicLang/build",
+  "command": "/usr/bin/c++  -I/home/levi/Documents/MusicLang/include -I/home/levi/Documents/MusicLang/build/_deps/fmt-src/include -O3 -s -std=gnu++17 -o CMakeFiles/Parser.dir/src/main.cpp.o -c /home/levi/Documents/MusicLang/src/main.cpp",
+  "file": "/home/levi/Documents/MusicLang/src/main.cpp",
+  "output": "CMakeFiles/Parser.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/levi/Documents/MusicLang/build",
+  "command": "/usr/bin/c++  -I/home/levi/Documents/MusicLang/include -I/home/levi/Documents/MusicLang/build/_deps/fmt-src/include -O3 -s -std=gnu++17 -o CMakeFiles/Parser.dir/src/Lexer.cpp.o -c /home/levi/Documents/MusicLang/src/Lexer.cpp",
+  "file": "/home/levi/Documents/MusicLang/src/Lexer.cpp",
+  "output": "CMakeFiles/Parser.dir/src/Lexer.cpp.o"
+},
+{
+  "directory": "/home/levi/Documents/MusicLang/build",
+  "command": "/usr/bin/c++  -I/home/levi/Documents/MusicLang/include -I/home/levi/Documents/MusicLang/build/_deps/fmt-src/include -O3 -s -std=gnu++17 -o CMakeFiles/Parser.dir/src/Parser.cpp.o -c /home/levi/Documents/MusicLang/src/Parser.cpp",
+  "file": "/home/levi/Documents/MusicLang/src/Parser.cpp",
+  "output": "CMakeFiles/Parser.dir/src/Parser.cpp.o"
+},
+{
+  "directory": "/home/levi/Documents/MusicLang/build",
+  "command": "/usr/bin/c++  -I/home/levi/Documents/MusicLang/include -I/home/levi/Documents/MusicLang/build/_deps/fmt-src/include -O3 -s -std=gnu++17 -o CMakeFiles/Parser.dir/src/Enviroment.cpp.o -c /home/levi/Documents/MusicLang/src/Enviroment.cpp",
+  "file": "/home/levi/Documents/MusicLang/src/Enviroment.cpp",
+  "output": "CMakeFiles/Parser.dir/src/Enviroment.cpp.o"
+},
+{
+  "directory": "/home/levi/Documents/MusicLang/build/_deps/fmt-build",
+  "command": "/usr/bin/c++  -I/home/levi/Documents/MusicLang/include -I/home/levi/Documents/MusicLang/build/_deps/fmt-src/include -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/fmt.dir/src/format.cc.o -c /home/levi/Documents/MusicLang/build/_deps/fmt-src/src/format.cc",
+  "file": "/home/levi/Documents/MusicLang/build/_deps/fmt-src/src/format.cc",
+  "output": "_deps/fmt-build/CMakeFiles/fmt.dir/src/format.cc.o"
+},
+{
+  "directory": "/home/levi/Documents/MusicLang/build/_deps/fmt-build",
+  "command": "/usr/bin/c++  -I/home/levi/Documents/MusicLang/include -I/home/levi/Documents/MusicLang/build/_deps/fmt-src/include -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/fmt.dir/src/os.cc.o -c /home/levi/Documents/MusicLang/build/_deps/fmt-src/src/os.cc",
+  "file": "/home/levi/Documents/MusicLang/build/_deps/fmt-src/src/os.cc",
+  "output": "_deps/fmt-build/CMakeFiles/fmt.dir/src/os.cc.o"
+}
+]
