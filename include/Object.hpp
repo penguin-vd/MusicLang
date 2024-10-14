@@ -12,7 +12,6 @@
 
 enum class ObjectType {
     INTEGER,
-    FLOAT,
     BOOLEAN,
     STRING,
     NULL_OBJ,
@@ -59,9 +58,6 @@ struct fmt::formatter<ObjectType> {
         switch (type) {
             case ObjectType::INTEGER:
                 typeStr = "INTEGER";
-                break;
-            case ObjectType::FLOAT:
-                typeStr = "FLOAT";
                 break;
             case ObjectType::BOOLEAN:
                 typeStr = "BOOLEAN";
@@ -183,6 +179,15 @@ struct BuiltinObj : public IObject {
     std::string Inspect() override { return "builtin obj"; }
 };
 
+using AccessFunction = std::function<std::shared_ptr<IObject>(std::shared_ptr<IObject> self, const std::vector<std::shared_ptr<IObject>> params)>;
+struct AccessFuncObj : public IObject {
+    AccessFunction Function;
+
+    AccessFuncObj(AccessFunction func) : Function(func) {}
+    ObjectType Type() override { return ObjectType::FUNCTION; }
+    std::string Inspect() override { return "builtin obj"; }
+};
+
 struct ArrayObject : public IObject {
     std::vector<std::shared_ptr<IObject>> Elements;
 
@@ -261,6 +266,8 @@ struct IterObj : public IObject {
     int Low;
     int High;
     int Steps;
+
+    IterObj(int low, int high, int steps) : Low(low), High(high), Steps(steps) {}
     ObjectType Type() override { return ObjectType::ITER; }
     std::string Inspect() override {
         return "range(" + std::to_string(Low) + ", " + std::to_string(High) +

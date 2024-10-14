@@ -12,46 +12,29 @@ Parser::Parser(Lexer l) : lexer(l) {
     Errors = std::vector<std::string>();
 
     RegisterPrefix(TokenType::IDENT, std::bind(&Parser::ParseIdentifier, this));
-    RegisterPrefix(TokenType::INT,
-                   std::bind(&Parser::ParseIntegerLiteral, this));
-    RegisterPrefix(TokenType::BANG,
-                   std::bind(&Parser::ParsePrefixExpression, this));
-    RegisterPrefix(TokenType::MINUS,
-                   std::bind(&Parser::ParsePrefixExpression, this));
+    RegisterPrefix(TokenType::INT, std::bind(&Parser::ParseIntegerLiteral, this));
+    RegisterPrefix(TokenType::BANG, std::bind(&Parser::ParsePrefixExpression, this));
+    RegisterPrefix(TokenType::MINUS, std::bind(&Parser::ParsePrefixExpression, this));
     RegisterPrefix(TokenType::TRUE, std::bind(&Parser::ParseBoolean, this));
     RegisterPrefix(TokenType::FALSE, std::bind(&Parser::ParseBoolean, this));
-    RegisterPrefix(TokenType::LPAREN,
-                   std::bind(&Parser::ParseGroupedExpression, this));
+    RegisterPrefix(TokenType::LPAREN, std::bind(&Parser::ParseGroupedExpression, this));
     RegisterPrefix(TokenType::IF, std::bind(&Parser::ParseIfExpression, this));
-    RegisterPrefix(TokenType::STRING,
-                   std::bind(&Parser::ParseStringLiteral, this));
-    RegisterPrefix(TokenType::LBRACKET,
-                   std::bind(&Parser::ParseArrayLiteral, this));
-    RegisterPrefix(TokenType::LBRACE,
-                   std::bind(&Parser::ParseHashLiteral, this));
-    RegisterPrefix(TokenType::FOR,
-                   std::bind(&Parser::ParseForExpression, this));
+    RegisterPrefix(TokenType::STRING, std::bind(&Parser::ParseStringLiteral, this));
+    RegisterPrefix(TokenType::LBRACKET, std::bind(&Parser::ParseArrayLiteral, this));
+    RegisterPrefix(TokenType::LBRACE, std::bind(&Parser::ParseHashLiteral, this));
+    RegisterPrefix(TokenType::FOR, std::bind(&Parser::ParseForExpression, this));
+    RegisterPrefix(TokenType::ACCESS, std::bind(&Parser::ParseAccessExpression, this));
 
-    RegisterInfix(TokenType::EQ, std::bind(&Parser::ParseInfixExpression, this,
-                                           std::placeholders::_1));
-    RegisterInfix(TokenType::NOT_EQ, std::bind(&Parser::ParseInfixExpression,
-                                               this, std::placeholders::_1));
-    RegisterInfix(TokenType::LT, std::bind(&Parser::ParseInfixExpression, this,
-                                           std::placeholders::_1));
-    RegisterInfix(TokenType::GT, std::bind(&Parser::ParseInfixExpression, this,
-                                           std::placeholders::_1));
-    RegisterInfix(TokenType::PLUS, std::bind(&Parser::ParseInfixExpression,
-                                             this, std::placeholders::_1));
-    RegisterInfix(TokenType::MINUS, std::bind(&Parser::ParseInfixExpression,
-                                              this, std::placeholders::_1));
-    RegisterInfix(TokenType::SLASH, std::bind(&Parser::ParseInfixExpression,
-                                              this, std::placeholders::_1));
-    RegisterInfix(TokenType::ASTERISK, std::bind(&Parser::ParseInfixExpression,
-                                                 this, std::placeholders::_1));
-    RegisterInfix(TokenType::LPAREN, std::bind(&Parser::ParseCallExpression,
-                                               this, std::placeholders::_1));
-    RegisterInfix(TokenType::LBRACKET, std::bind(&Parser::ParseIndexExpression,
-                                                 this, std::placeholders::_1));
+    RegisterInfix(TokenType::EQ, std::bind(&Parser::ParseInfixExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::NOT_EQ, std::bind(&Parser::ParseInfixExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::LT, std::bind(&Parser::ParseInfixExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::GT, std::bind(&Parser::ParseInfixExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::PLUS, std::bind(&Parser::ParseInfixExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::MINUS, std::bind(&Parser::ParseInfixExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::SLASH, std::bind(&Parser::ParseInfixExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::ASTERISK, std::bind(&Parser::ParseInfixExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::LPAREN, std::bind(&Parser::ParseCallExpression, this, std::placeholders::_1));
+    RegisterInfix(TokenType::LBRACKET, std::bind(&Parser::ParseIndexExpression, this, std::placeholders::_1));
 }
 
 void Parser::NextToken() {
@@ -113,16 +96,12 @@ std::shared_ptr<LetStatement> Parser::ParseLetStatement() {
 std::shared_ptr<ReturnStatement> Parser::ParseReturnStatement() {
     auto stmt = std::make_shared<ReturnStatement>(curToken);
     NextToken();
-    stmt->ReturnValue = ParseExpression(Precedence::LOWEST);
+    stmt->Value = ParseExpression(Precedence::LOWEST);
     if (PeekTokenIs(TokenType::SEMICOLON)) NextToken();
     return stmt;
 }
 
 std::shared_ptr<Statement> Parser::ParseAssignStatement() {
-    if (PeekTokenIs(TokenType::ACCESS)) {
-        return ParseAccessStatement();
-    }
-
     auto stmt = std::make_shared<AssignStatement>(curToken);
     if (PeekTokenIs(TokenType::LBRACKET)) {
         stmt->Name = ParseExpression(Precedence::LOWEST);
@@ -146,7 +125,7 @@ std::shared_ptr<Statement> Parser::ParseAssignStatement() {
     return stmt;
 }
 
-std::shared_ptr<Statement> Parser::ParseAccessStatement() {
+std::shared_ptr<Expression> Parser::ParseAccessExpression() {
     Token token = curToken;
 
     NextToken();
@@ -156,15 +135,14 @@ std::shared_ptr<Statement> Parser::ParseAccessStatement() {
         return nullptr;
     }
 
-    auto stmt = std::make_shared<AccessStatement>(token);
-    stmt->Name = std::make_shared<Identifier>(curToken, curToken.Literal);
-    stmt->Parent = std::make_shared<Identifier>(token, token.Literal);
-    stmt->Statement = ParseStatement();
-    if (stmt->Statement == nullptr) {
+    auto exp = std::make_shared<AccessExpression>(token);
+    exp->Parent = std::make_shared<Identifier>(token, token.Literal);
+    exp->TheStatement = ParseStatement();
+    if (exp->TheStatement == nullptr) {
         return nullptr;
     }
 
-    return stmt;
+    return exp;
 }
 
 std::shared_ptr<BreakStatement> Parser::ParseBreakStatement() {
@@ -174,7 +152,7 @@ std::shared_ptr<BreakStatement> Parser::ParseBreakStatement() {
     return stmt;
 }
 
-std::shared_ptr<ExpressionStatement> Parser::ParseExpressionStatement() {
+std::shared_ptr<Statement> Parser::ParseExpressionStatement() {
     auto stmt = std::make_shared<ExpressionStatement>(curToken);
     stmt->TheExpression = ParseExpression(Precedence::LOWEST);
     if (PeekTokenIs(TokenType::SEMICOLON)) NextToken();
@@ -182,7 +160,13 @@ std::shared_ptr<ExpressionStatement> Parser::ParseExpressionStatement() {
 }
 
 std::shared_ptr<Expression> Parser::ParseExpression(Precedence precedence) {
-    auto prefix = prefixParseFns[curToken.Type];
+    std::function<std::shared_ptr<Expression> ()> prefix;
+    if (PeekTokenIs(TokenType::ACCESS)) {
+        prefix = prefixParseFns[TokenType::ACCESS];
+    } else {
+        prefix = prefixParseFns[curToken.Type];
+    }
+
     if (!prefix) {
         NoPrefixParseFnError(curToken.Type);
         return nullptr;
@@ -190,8 +174,7 @@ std::shared_ptr<Expression> Parser::ParseExpression(Precedence precedence) {
 
     std::shared_ptr<Expression> leftExp = prefix();
 
-    while (!PeekTokenIs(TokenType::SEMICOLON) &&
-           precedence < PeekPrecedence()) {
+    while (!PeekTokenIs(TokenType::SEMICOLON) && precedence < PeekPrecedence()) {
         auto infix = infixParseFns[peekToken.Type];
         if (!infix) return leftExp;
 

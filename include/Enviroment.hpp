@@ -2,7 +2,6 @@
 #include <map>
 #include <string>
 
-#include "Ast.hpp"
 #include "Object.hpp"
 
 using namespace std;
@@ -12,6 +11,9 @@ class Env {
     static shared_ptr<BooleanObj> FALSE;
     static shared_ptr<Null> NULLOBJ;
     static shared_ptr<BreakObj> BREAK;
+    
+    Env() {}
+    Env(map<string, shared_ptr<IObject>> fields) : Store(fields) {}
 
     map<string, shared_ptr<IObject>> Store;
     shared_ptr<Env> Outer;
@@ -27,26 +29,3 @@ class Env {
 };
 
 shared_ptr<Env> NewEnclosedEnviroment(shared_ptr<Env> outer);
-
-struct Function : public IObject {
-    vector<shared_ptr<Identifier>> Parameters;
-    shared_ptr<BlockStatement> Body;
-    shared_ptr<Env> Enviroment;
-
-    Function(vector<shared_ptr<Identifier>> p, shared_ptr<BlockStatement> b, shared_ptr<Env> e) : Parameters(p), Body(b), Enviroment(e) {}
-
-    ObjectType Type() override { return ObjectType::FUNCTION; }
-    string Inspect() override {
-        string temp = "function (";
-        for (const auto& param : Parameters) {
-            temp += param->ToString();
-            temp += ", ";
-        }
-
-        if (!Parameters.empty()) {
-            temp.resize(temp.size() - 2);
-        }
-        temp += ") {\n" + Body->ToString() + "\n}";
-        return temp;
-    }
-};

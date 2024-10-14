@@ -53,7 +53,7 @@ class Parser {
     std::shared_ptr<ReturnStatement> ParseReturnStatement();
     std::shared_ptr<BreakStatement> ParseBreakStatement();
     std::shared_ptr<Statement> ParseAssignStatement();
-    std::shared_ptr<ExpressionStatement> ParseExpressionStatement();
+    std::shared_ptr<Statement> ParseExpressionStatement();
     std::shared_ptr<Expression> ParseExpression(Precedence precedence);
     std::shared_ptr<Expression> ParseInfixExpression(
         std::shared_ptr<Expression> left);
@@ -75,7 +75,7 @@ class Parser {
         std::shared_ptr<Expression> left);
     std::shared_ptr<BlockStatement> ParseBlockStatement();
     std::shared_ptr<ForIterative> ParseIterativeExpression();
-    std::shared_ptr<Statement> ParseAccessStatement();
+    std::shared_ptr<Expression> ParseAccessExpression();
     std::vector<std::shared_ptr<Expression>> ParseExpressionList(TokenType end);
     std::vector<std::shared_ptr<Identifier>> ParseFunctionParameters();
 

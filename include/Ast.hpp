@@ -5,12 +5,15 @@
 #include <string>
 #include <vector>
 
+#include "Object.hpp"
 #include "Token.hpp"
+#include "Enviroment.hpp"
 
 class Node {
    public:
     virtual std::string TokenLiteral() = 0;
     virtual std::string ToString() = 0;
+    virtual std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) = 0;
     virtual ~Node() {}
 };
 
@@ -39,6 +42,7 @@ struct AstProgram : public Node {
         }
         return temp;
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 // Expressions
@@ -50,6 +54,7 @@ struct Identifier : public Expression {
     void ExpressionNode() override {}
     std::string TokenLiteral() override { return TheToken.Literal; }
     std::string ToString() override { return TheToken.Literal; }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct IntegerLiteral : public Expression {
@@ -61,6 +66,7 @@ struct IntegerLiteral : public Expression {
     std::string TokenLiteral() override { return TheToken.Literal; }
 
     std::string ToString() override { return TheToken.Literal; }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct PrefixExpression : public Expression {
@@ -75,6 +81,7 @@ struct PrefixExpression : public Expression {
     std::string ToString() override {
         return "(" + Operator + Right->ToString() + ")";
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct InfixExpression : public Expression {
@@ -93,6 +100,7 @@ struct InfixExpression : public Expression {
         return "(" + Left->ToString() + " " + Operator + " " +
                Right->ToString() + ")";
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct BooleanExpression : public Expression {
@@ -104,6 +112,7 @@ struct BooleanExpression : public Expression {
     std::string TokenLiteral() override { return TheToken.Literal; }
 
     std::string ToString() override { return TheToken.Literal; }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct IndexExpression : public Expression {
@@ -119,6 +128,7 @@ struct IndexExpression : public Expression {
     std::string ToString() override {
         return "({" + Left->ToString() + "}[{" + Index->ToString() + "}])";
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct CallExpression : public Expression {
@@ -141,6 +151,7 @@ struct CallExpression : public Expression {
         temp += ")";
         return temp;
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 // Statements
@@ -156,6 +167,7 @@ struct LetStatement : public Statement {
         return TheToken.Literal + " " + Name->ToString() + " = " +
                Value->ToString();
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct AssignStatement : public Statement {
@@ -172,6 +184,7 @@ struct AssignStatement : public Statement {
     std::string ToString() override {
         return Name->ToString() + " " + Operator + " " + Value->ToString();
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct ExpressionStatement : public Statement {
@@ -179,10 +192,12 @@ struct ExpressionStatement : public Statement {
     std::shared_ptr<Expression> TheExpression;
 
     ExpressionStatement(Token t) : TheToken(t) {}
+    ExpressionStatement(std::shared_ptr<Expression> exp, Token t) : TheExpression(exp), TheToken(t) {}
     void StatementNode() override {}
     std::string TokenLiteral() override { return TheToken.Literal; }
 
     std::string ToString() override { return TheExpression->ToString(); }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct BlockStatement : public Statement {
@@ -200,11 +215,12 @@ struct BlockStatement : public Statement {
         tmp += "}";
         return tmp;
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct ReturnStatement : public Statement {
     Token TheToken;
-    std::shared_ptr<Expression> ReturnValue;
+    std::shared_ptr<Expression> Value;
 
     ReturnStatement(Token t) : TheToken(t) {}
 
@@ -212,8 +228,9 @@ struct ReturnStatement : public Statement {
     std::string TokenLiteral() override { return TheToken.Literal; }
 
     std::string ToString() override {
-        return TheToken.Literal + " " + ReturnValue->ToString() + ";";
+        return TheToken.Literal + " " + Value->ToString() + ";";
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct BreakStatement : public Statement {
@@ -223,21 +240,22 @@ struct BreakStatement : public Statement {
     void StatementNode() override {}
     std::string TokenLiteral() override { return TheToken.Literal; }
     std::string ToString() override { return "break"; }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
-struct AccessStatement : public Statement {
+struct AccessExpression : public Expression {
     Token TheToken;
 
-    std::shared_ptr<Expression> Name;
     std::shared_ptr<Expression> Parent;
-    std::shared_ptr<Statement> Statement;
+    std::shared_ptr<Statement> TheStatement;
 
-    AccessStatement(Token t) : TheToken(t) {}
-    void StatementNode() override {}
+    AccessExpression(Token t) : TheToken(t) {}
+    void ExpressionNode() override {}
     std::string TokenLiteral() override { return TheToken.Literal; }
     std::string ToString() override {
-        return Parent->ToString() + "->" + Statement->ToString();
+        return Parent->ToString() + "->" + TheStatement->ToString();
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 // Block Expressions
@@ -260,6 +278,7 @@ struct IfExpression : public Expression {
 
         return tmp;
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct ForIterative : public Expression {
@@ -273,6 +292,7 @@ struct ForIterative : public Expression {
     std::string ToString() override {
         return Index->ToString() + " in " + Array->ToString();
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct ForExpression : public Expression {
@@ -287,6 +307,7 @@ struct ForExpression : public Expression {
     std::string ToString() override {
         return "for(" + Iterative->ToString() + ") {" + Body->ToString() + "}";
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct FunctionLiteral : public Statement {
@@ -310,6 +331,7 @@ struct FunctionLiteral : public Statement {
         temp += ") " + Body->ToString();
         return temp;
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct StringLiteral : public Expression {
@@ -320,6 +342,7 @@ struct StringLiteral : public Expression {
     void ExpressionNode() override {}
     std::string TokenLiteral() override { return TheToken.Literal; }
     std::string ToString() override { return TheToken.Literal; }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct ArrayLiteral : public Expression {
@@ -339,6 +362,7 @@ struct ArrayLiteral : public Expression {
         temp += "]";
         return temp;
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
 
 struct HashLiteral : public Expression {
@@ -360,4 +384,5 @@ struct HashLiteral : public Expression {
         temp += "}";
         return temp;
     }
+    std::shared_ptr<IObject> Evaluate(std::shared_ptr<Env> env) override;
 };
