@@ -10,6 +10,8 @@
 
 int Repl() {
     std::shared_ptr<Env> env = std::make_shared<Env>();
+    env->Set("NOTES", make_shared<NoteObj>());
+    env->Set("TIME", make_shared<TimeObj>());
     std::string line;
     int code = 0;
     while(true) {

@@ -26,6 +26,7 @@ class Env {
     shared_ptr<IObject> GetArrayObject(string name, shared_ptr<Integer> index);
 
     shared_ptr<IObject> AddEnv(shared_ptr<Env> env);
+    std::shared_ptr<IObject> ExtendEnv(std::map<std::string, std::shared_ptr<IObject>> fields);
 };
 
 shared_ptr<Env> NewEnclosedEnviroment(shared_ptr<Env> outer);

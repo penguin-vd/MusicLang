@@ -8,21 +8,21 @@ What will it take to create a MusicLang
     - [x] Parser
     - [x] Evaluator
 - [ ] Making a Midi Library
-    - [ ] Adding midi object
-    - [ ] Adding note object
-    - [ ] Adding time object
+    - [x] Adding midi object
+    - [x] Adding note object
+    - [x] Adding time object
     - [ ] Add a lot of helper things
 - [ ] Making a UI for non-code people
     - [ ] RayGUI
 
 
 ## Example
-```music
-let midi = create_midi_object();
+```midilang
+let midi = make_midi_object();
 
 midi->bpm = 120;
-midi->add_note(C4);
-midi->wait(QUARTER);
-midi->add_note(C5);
+midi->add_note(NOTES->C4);
+midi->wait(TIME->QUARTER);
+midi->add_note(NOTES->C5);
 midi->generate_midi("octave.midi");
 ```

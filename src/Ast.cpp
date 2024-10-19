@@ -19,11 +19,13 @@ shared_ptr<Error> NewerError(string format) {
 map<string, std::shared_ptr<IObject>> Builtins = {
     {"exit", make_shared<BuiltinObj>(ExitCall) },
     {"range", make_shared<BuiltinObj>(Range) },
-    {"print", make_shared<BuiltinObj>(Print) }
+    {"print", make_shared<BuiltinObj>(Print) },
+    {"make_midi_object", make_shared<BuiltinObj>(MakeMidiObject) },
 };
 
 map<string, shared_ptr<IObject>> AccessFunctions {
-    {"Type", make_shared<AccessFuncObj>(Type) }
+    {"Type", make_shared<AccessFuncObj>(Type) },
+    {"AddNote", make_shared<AccessFuncObj>(AddNote) },
 };
 
 std::shared_ptr<IObject> AstProgram::Evaluate(std::shared_ptr<Env> env) {
@@ -184,8 +186,14 @@ std::shared_ptr<IObject> AccessExpression::Evaluate(std::shared_ptr<Env> env) {
     auto parent = Parent->Evaluate(env);
     std::shared_ptr<Env> objEnv = make_shared<Env>(AccessFunctions);
     objEnv->Set("_this", parent);
-    auto name = TheStatement->Evaluate(objEnv);
-    return name;
+
+    if (parent->Type() == ObjectType::NOTE) {
+        objEnv->ExtendEnv(static_pointer_cast<NoteObj>(parent)->Fields);
+    } else if (parent->Type() == ObjectType::TIME) {
+        objEnv->ExtendEnv(static_pointer_cast<TimeObj>(parent)->Fields);
+    }
+    
+    return TheStatement->Evaluate(objEnv);
 }
 
 std::shared_ptr<IObject> IfExpression::Evaluate(std::shared_ptr<Env> env) {

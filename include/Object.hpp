@@ -25,7 +25,13 @@ enum class ObjectType {
     HASH,
     BREAK,
     ITER,
+    MIDI,
+    NOTE,
+    TIME,
 };
+
+const int TICKS_PER_QUARTER = 480;
+const std::array<std::string, 12> NOTES = {"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"};
 
 class IObject {
    public:
@@ -97,6 +103,15 @@ struct fmt::formatter<ObjectType> {
                 break;
             case ObjectType::ITER:
                 typeStr = "ITER";
+                break;
+            case ObjectType::MIDI:
+                typeStr = "MIDI";
+                break;
+            case ObjectType::NOTE:
+                typeStr = "NOTE";
+                break;
+            case ObjectType::TIME:
+                typeStr = "TIME";
                 break;
         }
         return fmt::format_to(ctx.out(), "{}", typeStr);
@@ -191,6 +206,7 @@ struct AccessFuncObj : public IObject {
 struct ArrayObject : public IObject {
     std::vector<std::shared_ptr<IObject>> Elements;
 
+    ArrayObject() {}
     ArrayObject(std::vector<std::shared_ptr<IObject>> e) : Elements(e) {}
     ObjectType Type() override { return ObjectType::ARRAY; }
     std::string Inspect() override {
@@ -272,5 +288,68 @@ struct IterObj : public IObject {
     std::string Inspect() override {
         return "range(" + std::to_string(Low) + ", " + std::to_string(High) +
                ", " + std::to_string(Steps) + ")";
+    }
+};
+
+struct MidiNoteEvent {
+    int Note;
+    int Velocity;
+    int Time;
+    bool IsOnEvent;
+
+    MidiNoteEvent(int note, int vel, int time, bool isOnEvent) :
+        Note(note), Velocity(vel), Time(time), IsOnEvent(isOnEvent) {}
+};
+
+struct MidiObj : public IObject {
+    std::vector<MidiNoteEvent> Notes;
+    int currentTime = 0;
+
+    ObjectType Type() override { return ObjectType::MIDI; }
+    std::string Inspect() override {
+        return "Midi obj";
+    }
+};
+
+struct NoteObj : public IObject {
+    std::map<std::string, std::shared_ptr<IObject>> Fields;
+
+    NoteObj() {
+        for (int i = 0; i < 11; ++i) {
+            int j = 0;
+            for (const std::string ch : NOTES) {
+                int value = j + i * 12;
+                if (value > 127) break;
+
+                Fields[ch + std::to_string(i)] = std::make_shared<Integer>(value);
+                j++;
+            }
+        }
+    }
+
+    ObjectType Type() override { return ObjectType::NOTE; }
+    std::string Inspect() override {
+        return "Notes";
+    }
+};
+
+struct TimeObj : public IObject {
+    std::map<std::string, std::shared_ptr<IObject>> Fields;
+
+    TimeObj() {
+        Fields = {
+            {"WHOLE", std::make_shared<Integer>(1)},
+            {"HALF", std::make_shared<Integer>(2)},
+            {"QUARTER", std::make_shared<Integer>(4)},
+            {"EIGHTH", std::make_shared<Integer>(8)},
+            {"SIXTEENTH", std::make_shared<Integer>(16)},
+            {"THIRTY_SECOND", std::make_shared<Integer>(32)},
+            {"SIXTY_FOURTH", std::make_shared<Integer>(64)},
+        };
+    }
+
+    ObjectType Type() override { return ObjectType::TIME; }
+    std::string Inspect() override {
+        return "Time";
     }
 };

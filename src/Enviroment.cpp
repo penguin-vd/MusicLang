@@ -13,8 +13,7 @@ std::shared_ptr<BooleanObj> Env::FALSE = std::make_shared<BooleanObj>(false);
 std::shared_ptr<Null> Env::NULLOBJ = std::make_shared<Null>();
 std::shared_ptr<BreakObj> Env::BREAK = std::make_shared<BreakObj>();
 
-std::shared_ptr<IObject> Env::Set(std::string name,
-                                  std::shared_ptr<IObject> val) {
+std::shared_ptr<IObject> Env::Set(std::string name, std::shared_ptr<IObject> val) {
     if (Outer != nullptr && Outer->Get(name) != nullptr) {
         Outer->Set(name, val);
         return val;
@@ -23,9 +22,7 @@ std::shared_ptr<IObject> Env::Set(std::string name,
     return val;
 }
 
-std::shared_ptr<IObject> Env::Set(std::string name,
-                                  std::shared_ptr<IObject> index,
-                                  std::shared_ptr<IObject> assignVal) {
+std::shared_ptr<IObject> Env::Set(std::string name, std::shared_ptr<IObject> index, std::shared_ptr<IObject> assignVal) {
     std::shared_ptr<IObject> obj = Get(name);
     if (!obj) return nullptr;
 
@@ -74,8 +71,7 @@ std::shared_ptr<IObject> Env::GetHashObject(std::string name,
     return nullptr;
 }
 
-std::shared_ptr<IObject> Env::GetArrayObject(std::string name,
-                                             std::shared_ptr<Integer> index) {
+std::shared_ptr<IObject> Env::GetArrayObject(std::string name, std::shared_ptr<Integer> index) {
     if (Store.find(name) == Store.end()) {
         if (Outer != nullptr) {
             return Outer->GetArrayObject(name, index);
@@ -94,6 +90,16 @@ std::shared_ptr<IObject> Env::GetArrayObject(std::string name,
 
 std::shared_ptr<IObject> Env::AddEnv(std::shared_ptr<Env> env) {
     for (const auto &[key, value] : env->Store) {
+        if (value->Type() == ObjectType::ERROR) {
+            return value;
+        }
+        Store[key] = value;
+    }
+    return Env::NULLOBJ;
+}
+
+std::shared_ptr<IObject> Env::ExtendEnv(std::map<std::string, std::shared_ptr<IObject>> fields) {
+    for (const auto &[key, value] : fields) {
         if (value->Type() == ObjectType::ERROR) {
             return value;
         }
