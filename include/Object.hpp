@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 enum class ObjectType {
     INTEGER,
@@ -294,11 +295,41 @@ struct IterObj : public IObject {
 struct MidiNoteEvent {
     int Note;
     int Velocity;
-    int Time;
+    uint32_t Time;
     bool IsOnEvent;
 
     MidiNoteEvent(int note, int vel, int time, bool isOnEvent) :
         Note(note), Velocity(vel), Time(time), IsOnEvent(isOnEvent) {}
+    
+    std::vector<uint8_t> GenerateVariableLengthQuantity(uint32_t value) {
+        std::vector<uint8_t> buffer;
+        buffer.push_back(value & 0x7F);
+        value >>= 7;
+        while (value > 0) {
+            buffer.push_back((value & 0x7F) | 0x80);
+            value >>= 7;
+        }
+        std::reverse(buffer.begin(), buffer.end());
+        return buffer;
+    }
+
+    std::vector<uint8_t> GenerateEvent(uint32_t lastTime) {
+        std::vector<uint8_t> event;
+        auto deltaTimeBytes = GenerateVariableLengthQuantity(Time - lastTime);
+        event.insert(event.end(), deltaTimeBytes.begin(), deltaTimeBytes.end());
+
+        if (IsOnEvent) {
+            event.push_back(0x90);
+            event.push_back(Note);
+            event.push_back(Velocity);
+        } else {
+            event.push_back(0x80);
+            event.push_back(Note);
+            event.push_back(0);
+        }
+
+        return event;
+    }
 };
 
 struct MidiObj : public IObject {

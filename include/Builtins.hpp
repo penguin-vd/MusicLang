@@ -9,3 +9,5 @@ std::shared_ptr<IObject> MakeMidiObject(const std::vector<std::shared_ptr<IObjec
 
 std::shared_ptr<IObject> Type(std::shared_ptr<IObject> self, const std::vector<std::shared_ptr<IObject>>& args);
 std::shared_ptr<IObject> AddNote(std::shared_ptr<IObject> self, const std::vector<std::shared_ptr<IObject>>& args);
+std::shared_ptr<IObject> Wait(std::shared_ptr<IObject> self, const std::vector<std::shared_ptr<IObject>>& args);
+std::shared_ptr<IObject> GenerateMidi(std::shared_ptr<IObject> self, const std::vector<std::shared_ptr<IObject>>& args);

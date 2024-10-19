@@ -26,6 +26,8 @@ map<string, std::shared_ptr<IObject>> Builtins = {
 map<string, shared_ptr<IObject>> AccessFunctions {
     {"Type", make_shared<AccessFuncObj>(Type) },
     {"AddNote", make_shared<AccessFuncObj>(AddNote) },
+    {"Wait", make_shared<AccessFuncObj>(Wait) },
+    {"GenerateMidi", make_shared<AccessFuncObj>(GenerateMidi) },
 };
 
 std::shared_ptr<IObject> AstProgram::Evaluate(std::shared_ptr<Env> env) {
@@ -184,6 +186,8 @@ std::shared_ptr<IObject> BreakStatement::Evaluate(std::shared_ptr<Env> env) {
 
 std::shared_ptr<IObject> AccessExpression::Evaluate(std::shared_ptr<Env> env) {
     auto parent = Parent->Evaluate(env);
+    if (IsError(parent)) return parent;
+
     std::shared_ptr<Env> objEnv = make_shared<Env>(AccessFunctions);
     objEnv->Set("_this", parent);
 
@@ -192,7 +196,7 @@ std::shared_ptr<IObject> AccessExpression::Evaluate(std::shared_ptr<Env> env) {
     } else if (parent->Type() == ObjectType::TIME) {
         objEnv->ExtendEnv(static_pointer_cast<TimeObj>(parent)->Fields);
     }
-    
+
     return TheStatement->Evaluate(objEnv);
 }
 

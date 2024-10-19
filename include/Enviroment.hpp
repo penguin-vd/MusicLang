@@ -11,9 +11,15 @@ class Env {
     static shared_ptr<BooleanObj> FALSE;
     static shared_ptr<Null> NULLOBJ;
     static shared_ptr<BreakObj> BREAK;
-    
-    Env() {}
-    Env(map<string, shared_ptr<IObject>> fields) : Store(fields) {}
+
+    Env() {
+        Set("NOTES", make_shared<NoteObj>());
+        Set("TIME", make_shared<TimeObj>());
+    }
+    Env(map<string, shared_ptr<IObject>> fields) : Store(fields) {
+        Set("NOTES", make_shared<NoteObj>());
+        Set("TIME", make_shared<TimeObj>());
+    }
 
     map<string, shared_ptr<IObject>> Store;
     shared_ptr<Env> Outer;
