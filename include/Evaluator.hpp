@@ -31,15 +31,6 @@ struct Function : public IObject {
     }
 };
 
-template <typename... Args>
-shared_ptr<Error> NewError(string format, Args... args);
-shared_ptr<Error> NewError(string format);
-
-shared_ptr<IObject> EvalBlockStatement(shared_ptr<BlockStatement> block, shared_ptr<Env> env);
-shared_ptr<IObject> EvalAssignStatement(shared_ptr<AssignStatement> stmt, shared_ptr<IObject> value, shared_ptr<Env> env);
-shared_ptr<IObject> EvalIfExpression(shared_ptr<IfExpression> ie, shared_ptr<Env> env);
-shared_ptr<IObject> EvalIdentifier(shared_ptr<Identifier> ident, shared_ptr<Env> env);
-shared_ptr<IObject> EvalForExpression(shared_ptr<ForExpression> exp, shared_ptr<Env> env);
 shared_ptr<IObject> ApplyFunction(shared_ptr<IObject> fn, vector<shared_ptr<IObject>> args, shared_ptr<Env> env, int line);
 vector<shared_ptr<IObject>> EvalExpressions(vector<shared_ptr<Expression>> exps, shared_ptr<Env> env);
 

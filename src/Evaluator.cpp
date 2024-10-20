@@ -10,14 +10,6 @@
 #include "Enviroment.hpp"
 #include "Object.hpp"
 
-template <typename... Args>
-shared_ptr<Error> NewError(string format, Args... args) {
-    return make_shared<Error>(fmt::format(format, args...));
-}
-
-shared_ptr<Error> NewError(string format) {
-    return make_shared<Error>(format);
-}
 
 shared_ptr<IObject> ApplyFunction(shared_ptr<IObject> fn, vector<shared_ptr<IObject>> args, shared_ptr<Env> env, int line) {
     if (auto func = dynamic_pointer_cast<Function>(fn)) {
@@ -29,7 +21,7 @@ shared_ptr<IObject> ApplyFunction(shared_ptr<IObject> fn, vector<shared_ptr<IObj
     } else if (auto access = dynamic_pointer_cast<AccessFuncObj>(fn)) {
         return access->Function(env->Get("_this"), args);
     }
-    return NewError("at {0}, not a function: {1}", line, fn->Type());
+    return std::make_shared<Error>(fmt::format("at {0}, not a function: {1}", line, fn->Type()));
 }
 
 vector<shared_ptr<IObject>> EvalExpressions(vector<shared_ptr<Expression>> exps, shared_ptr<Env> env) {
@@ -48,21 +40,21 @@ shared_ptr<IObject> EvalAssignOperator(shared_ptr<IObject> oldVal, shared_ptr<IO
         return newVal;
     } else if (op == "+=") {
         if (oldVal->Type() != ObjectType::INTEGER || newVal->Type() != ObjectType::INTEGER) {
-            return NewError("at {0}, type mismatch: {1} {2} {3}", line, oldVal->Type(), op, newVal->Type());
+            return std::make_shared<Error>(fmt::format("at {0}, type mismatch: {1} {2} {3}", line, oldVal->Type(), op, newVal->Type()));
         }
         return make_shared<Integer>(static_pointer_cast<Integer>(oldVal)->Value + static_pointer_cast<Integer>(newVal)->Value);
     } else if (op == "-=") {
         if (oldVal->Type() != ObjectType::INTEGER || newVal->Type() != ObjectType::INTEGER) {
-            return NewError("at {0}, type mismatch: {1} {2} {3}", line, oldVal->Type(), op, newVal->Type());
+            return std::make_shared<Error>(fmt::format("at {0}, type mismatch: {1} {2} {3}", line, oldVal->Type(), op, newVal->Type()));
         }
         return make_shared<Integer>(static_pointer_cast<Integer>(oldVal)->Value - static_pointer_cast<Integer>(newVal)->Value);
     } else if (op == "*=") {
         if (oldVal->Type() != ObjectType::INTEGER || newVal->Type() != ObjectType::INTEGER) {
-            return NewError("at {0}, type mismatch: {1} {2} {3}", line, oldVal->Type(), op, newVal->Type());
+            return std::make_shared<Error>(fmt::format("at {0}, type mismatch: {1} {2} {3}", line, oldVal->Type(), op, newVal->Type()));
         }
         return make_shared<Integer>(static_pointer_cast<Integer>(oldVal)->Value * static_pointer_cast<Integer>(newVal)->Value);
     } else {
-        return NewError("at {0}, operator '{1}' not recognized", line, op);
+        return std::make_shared<Error>(fmt::format("at {0}, operator '{1}' not recognized", line, op));
     }
 }
 
@@ -72,7 +64,7 @@ shared_ptr<IObject> EvalPrefixExpression(string op, shared_ptr<IObject> obj, int
     } else if (op == "-") {
         return EvalMinusOperatorExpression(obj, line);
     }
-    return NewError("at {0}, unkown operator: {1}{2}", line, op, obj->Type());
+    return std::make_shared<Error>(fmt::format("at {0}, unkown operator: {1}{2}", line, op, obj->Type()));
 }
 
 shared_ptr<IObject> EvalBangOperatorExpression(shared_ptr<IObject> obj) {
@@ -86,7 +78,7 @@ shared_ptr<IObject> EvalBangOperatorExpression(shared_ptr<IObject> obj) {
 
 shared_ptr<IObject> EvalMinusOperatorExpression(shared_ptr<IObject> obj, int line) {
     if (obj->Type() != ObjectType::INTEGER) {
-        return NewError("at {0}, unknown operaitor: -{1}", line, obj->Type());
+        return std::make_shared<Error>(fmt::format("at {0}, unknown operaitor: -{1}", line, obj->Type()));
         ;
     }
     return make_shared<Integer>(-(static_pointer_cast<Integer>(obj)->Value));
@@ -98,7 +90,7 @@ shared_ptr<IObject> EvalInfixExpression(string op, shared_ptr<IObject> left, sha
     }
 
     if (left->Type() != right->Type()) {
-        return NewError("at {0}, type mismatch: {1} {2} {3}", line, left->Type(), op, right->Type());
+        return std::make_shared<Error>(fmt::format("at {0}, type mismatch: {1} {2} {3}", line, left->Type(), op, right->Type()));
     }
 
     if (left->Type() == ObjectType::STRING) {
@@ -111,7 +103,7 @@ shared_ptr<IObject> EvalInfixExpression(string op, shared_ptr<IObject> left, sha
         return NativeBoolToBooleanObj(left->Inspect() != right->Inspect());
     }
 
-    return NewError("at {0}, unknown operator: {1} {2} {3}", line, left->Type(), op, right->Type());
+    return std::make_shared<Error>(fmt::format("at {0}, unknown operator: {1} {2} {3}", line, left->Type(), op, right->Type()));
 }
 
 shared_ptr<IObject> EvalIntegerInfixExpression(string op, shared_ptr<Integer> left, shared_ptr<Integer> right, int line) {
@@ -134,7 +126,7 @@ shared_ptr<IObject> EvalIntegerInfixExpression(string op, shared_ptr<Integer> le
     } else if (op == "!=") {
         return NativeBoolToBooleanObj(leftVal != rightVal);
     }
-    return NewError("at {0}, unknown operator: {1} {2} {3}", line, left->Type(), op, right->Type());
+    return std::make_shared<Error>(fmt::format("at {0}, unknown operator: {1} {2} {3}", line, left->Type(), op, right->Type()));
 }
 
 shared_ptr<IObject> EvalStringInfixExpression(string op, shared_ptr<StringObj> left, shared_ptr<StringObj> right, int line) {
@@ -147,7 +139,7 @@ shared_ptr<IObject> EvalStringInfixExpression(string op, shared_ptr<StringObj> l
     } else if (op == "!=") {
         return NativeBoolToBooleanObj(leftVal != rightVal);
     }
-    return NewError("at {0}, unknown operator: {1} {2} {3}", line, left->Type(), op, right->Type());
+    return std::make_shared<Error>(fmt::format("at {0}, unknown operator: {1} {2} {3}", line, left->Type(), op, right->Type()));
 }
 
 shared_ptr<IObject> EvalIndexExpression(shared_ptr<IObject> left, shared_ptr<IObject> index, int line) {
@@ -157,7 +149,7 @@ shared_ptr<IObject> EvalIndexExpression(shared_ptr<IObject> left, shared_ptr<IOb
     if (left->Type() == ObjectType::HASH) {
         return EvalHashIndexExpression(static_pointer_cast<Hash>(left), index, line);
     }
-    return NewError("at {0}, index operator not supported: {1}", line, left->Type());
+    return std::make_shared<Error>(fmt::format("at {0}, index operator not supported: {1}", line, left->Type()));
 }
 
 
@@ -172,7 +164,7 @@ shared_ptr<IObject> EvalArrayIndexExpression(shared_ptr<ArrayObject> array, shar
 shared_ptr<IObject> EvalHashIndexExpression(shared_ptr<Hash> hash, shared_ptr<IObject> index, int line) {
     auto hashAble = dynamic_pointer_cast<IHashable>(index);
     if (!hashAble) {
-        return NewError("at {0}, unusable as hash key: {1}", line, index->Type());
+        return std::make_shared<Error>(fmt::format("at {0}, unusable as hash key: {1}", line, index->Type()));
     }
 
     if (hash->Pairs.find(hashAble->GetHashKey()) != hash->Pairs.end()) {

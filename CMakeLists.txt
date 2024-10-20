@@ -1,13 +1,22 @@
-cmake_minimum_required(VERSION 3.10)
-project(MusicLang VERSION 1.0)
-
+﻿# CMakeList.txt : CMake project for MusicLang, include source and define
+# project specific logic here.
+#
+cmake_minimum_required (VERSION 3.8)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Enable Hot Reload for MSVC compilers if supported.
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+endif()
+
+project ("MusicLang")
 include_directories(include)
 
 include(FetchContent)
+
 FetchContent_Declare(
     fmt
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
@@ -15,14 +24,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
+# Add source to this project's executable.
+add_executable (MusicLang  "main.cpp" "src/Lexer.cpp" "src/Parser.cpp" "src/Enviroment.cpp" "src/Builtins.cpp" "src/Ast.cpp" "src/Evaluator.cpp")
+target_link_libraries(MusicLang PRIVATE fmt)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+if (CMAKE_VERSION VERSION_GREATER 3.12)
+  set_property(TARGET MusicLang PROPERTY CXX_STANDARD 20)
 endif()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s")
-set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -O0 -Wall -Wextra")
-
-add_executable(mlang src/main.cpp src/Lexer.cpp src/Parser.cpp src/Enviroment.cpp src/Builtins.cpp src/Ast.cpp src/Evaluator.cpp)
-
-target_link_libraries(mlang PRIVATE fmt)
+# TODO: Add tests and install targets if needed.

@@ -32,7 +32,6 @@ enum class ObjectType {
 };
 
 const int TICKS_PER_QUARTER = 480;
-const std::array<std::string, 12> NOTES = {"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"};
 
 class IObject {
    public:
@@ -347,7 +346,7 @@ struct NoteObj : public IObject {
     NoteObj() {
         for (int i = 0; i < 11; ++i) {
             int j = 0;
-            for (const std::string ch : NOTES) {
+            for (const std::string ch : {"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B" }) {
                 int value = j + i * 12;
                 if (value > 127) break;
 

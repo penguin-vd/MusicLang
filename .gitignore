@@ -1,4 +1,8 @@
 build
+out
 .clangd
 .clang-format
 .cache
+compile_commands.json
+.vs
+.vscode

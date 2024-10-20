@@ -7,14 +7,6 @@
 
 #include <memory>
 
-template <typename... Args>
-shared_ptr<Error> NewerError(string format, Args... args) {
-    return make_shared<Error>(fmt::format(format, args...));
-}
-
-shared_ptr<Error> NewerError(string format) {
-    return make_shared<Error>(format);
-}
 
 map<string, std::shared_ptr<IObject>> Builtins = {
     {"exit", make_shared<BuiltinObj>(ExitCall) },
@@ -57,7 +49,7 @@ std::shared_ptr<IObject> Identifier::Evaluate(std::shared_ptr<Env> env) {
     if (Builtins.find(this->Value) != Builtins.end()) {
         return Builtins[this->Value];
     }
-    return NewerError("at {}, identifier '{}' not found", this->TheToken.LineNumber, this->Value);
+    return std::make_shared<Error>(fmt::format("at {}, identifier '{}' not found", this->TheToken.LineNumber, this->Value));
 }
 
 std::shared_ptr<IObject> IntegerLiteral::Evaluate(std::shared_ptr<Env> env) {
@@ -109,7 +101,7 @@ std::shared_ptr<IObject> LetStatement::Evaluate(std::shared_ptr<Env> env) {
     auto letVal = this->Value->Evaluate(env);
     if (IsError(letVal)) return letVal;
     if (Builtins.find(this->Name->Value) != Builtins.end()) {
-        return NewerError("at line: {0}, {1} is a builtin function", this->TheToken.LineNumber, this->Name->Value);
+        return std::make_shared<Error>(fmt::format("at line: {0}, {1} is a builtin function", this->TheToken.LineNumber, this->Name->Value));
     }
 
     env->Set(this->Name->Value, letVal);
@@ -123,7 +115,7 @@ std::shared_ptr<IObject> AssignStatement::Evaluate(std::shared_ptr<Env> env) {
     if (auto exp = dynamic_pointer_cast<Identifier>(this->Name)) {
         auto obj = env->Get(exp->Value);
         if (obj == nullptr) {
-            return NewerError("at {0}, variable with name {1} has not been found", this->TheToken.LineNumber, this->Name->ToString());
+            return std::make_shared<Error>(fmt::format("at {0}, variable with name {1} has not been found", this->TheToken.LineNumber, this->Name->ToString()));
         }
         value = EvalAssignOperator(obj, value, this->Operator, this->TheToken.LineNumber);
         if (IsError(value)) return value;
@@ -242,16 +234,13 @@ std::shared_ptr<IObject> ForExpression::Evaluate(std::shared_ptr<Env> env) {
             if (res->Type() == ObjectType::BREAK) break;
         }
     } else {
-        return NewerError("at {0}, for does not support type {1}", this->TheToken.LineNumber, array->Type());
+        return std::make_shared<Error>(fmt::format("at {0}, for does not support type {1}", this->TheToken.LineNumber, array->Type()));
     }
 
     return Env::NULLOBJ;
 }
 
 std::shared_ptr<IObject> FunctionLiteral::Evaluate(std::shared_ptr<Env> env) {
-    auto ident = this->Ident->Evaluate(env);
-    if (IsError(ident)) return ident;
-
     env->Set(this->Ident->Value, make_shared<Function>(this->Parameters, this->Body, env));
     return Env::NULLOBJ;
 }
@@ -275,7 +264,7 @@ std::shared_ptr<IObject> HashLiteral::Evaluate(std::shared_ptr<Env> env) {
 
         auto hash = dynamic_pointer_cast<IHashable>(keyObj);
         if (hash == nullptr) {
-            return NewerError("at {0}, unusable key {1}", keyObj->Type());
+            return std::make_shared<Error>(fmt::format("at {0}, unusable key {1}", this->TheToken.LineNumber, keyObj->Type()));
         }
 
         auto valueObj = value->Evaluate(env);
