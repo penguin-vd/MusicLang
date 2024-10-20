@@ -336,7 +336,7 @@ struct MidiObj : public IObject {
 
     ObjectType Type() override { return ObjectType::MIDI; }
     std::string Inspect() override {
-        return "Midi obj";
+        return "MidiObj(MidiEvents=" + std::to_string(Notes.size()) + ")";
     }
 };
 
