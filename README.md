@@ -5,7 +5,7 @@
 The following code demonstrates how to generate a simple melody:
 
 ```midilang
-let midi = make_midi_object();
+let midi = make_midi();
 
 midi->AddNote(NOTES->D5, TIME->EIGHTH, 127);
 midi->Wait(TIME->EIGHTH);
