@@ -20,9 +20,18 @@ What will it take to create a MusicLang
 ```midilang
 let midi = make_midi_object();
 
-midi->bpm = 120;
-midi->add_note(NOTES->C4);
-midi->wait(TIME->QUARTER);
-midi->add_note(NOTES->C5);
-midi->generate_midi("octave.midi");
+midi->AddNote(NOTES->D5, TIME->EIGHTH, 127);
+midi->Wait(TIME->EIGHTH);
+midi->AddNote(NOTES->E5, TIME->EIGHTH, 127);
+midi->Wait(TIME->EIGHTH);
+midi->AddNote(NOTES->F5, TIME->EIGHTH, 127);
+midi->Wait(TIME->EIGHTH);
+midi->AddNote(NOTES->G5, TIME->EIGHTH, 127);
+midi->Wait(TIME->EIGHTH);
+midi->AddNote(NOTES->E5, TIME->EIGHTH, 127);
+midi->Wait(TIME->EIGHTH);
+midi->AddNote(NOTES->C5, TIME->EIGHTH, 127);
+midi->Wait(TIME->EIGHTH);
+midi->AddNote(NOTES->D5, TIME->EIGHTH, 127);
+midi->GenerateMidi("TheLick.midi");
 ```

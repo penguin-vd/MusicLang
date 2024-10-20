@@ -174,7 +174,7 @@ struct BreakObj : public IObject {
 struct Error : public IObject {
     std::string Message;
     Error(std::string msg) : Message(msg) {}
-    ObjectType Type() override { return ObjectType::BREAK; }
+    ObjectType Type() override { return ObjectType::ERROR; }
     std::string Inspect() override { return "ERROR: " + Message; }
 };
 
@@ -320,13 +320,12 @@ struct MidiNoteEvent {
 
         if (IsOnEvent) {
             event.push_back(0x90);
-            event.push_back(Note);
-            event.push_back(Velocity);
         } else {
             event.push_back(0x80);
-            event.push_back(Note);
-            event.push_back(0);
         }
+
+        event.push_back(Note);
+        event.push_back(Velocity);
 
         return event;
     }

@@ -23,6 +23,6 @@ endif()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s")
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -O0 -Wall -Wextra")
 
-add_executable(MusicLang src/main.cpp src/Lexer.cpp src/Parser.cpp src/Enviroment.cpp src/Builtins.cpp src/Ast.cpp src/Evaluator.cpp)
+add_executable(mlang src/main.cpp src/Lexer.cpp src/Parser.cpp src/Enviroment.cpp src/Builtins.cpp src/Ast.cpp src/Evaluator.cpp)
 
-target_link_libraries(MusicLang PRIVATE fmt)
+target_link_libraries(mlang PRIVATE fmt)

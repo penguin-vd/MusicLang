@@ -20,7 +20,9 @@ map<string, std::shared_ptr<IObject>> Builtins = {
     {"exit", make_shared<BuiltinObj>(ExitCall) },
     {"range", make_shared<BuiltinObj>(Range) },
     {"print", make_shared<BuiltinObj>(Print) },
-    {"make_midi_object", make_shared<BuiltinObj>(MakeMidiObject) },
+    {"make_midi", make_shared<BuiltinObj>(MakeMidiObject) },
+    {"random", make_shared<BuiltinObj>(Random) },
+    {"random_seed", make_shared<BuiltinObj>(SetRandomSeed) },
 };
 
 map<string, shared_ptr<IObject>> AccessFunctions {
@@ -187,9 +189,15 @@ std::shared_ptr<IObject> BreakStatement::Evaluate(std::shared_ptr<Env> env) {
 std::shared_ptr<IObject> AccessExpression::Evaluate(std::shared_ptr<Env> env) {
     auto parent = Parent->Evaluate(env);
     if (IsError(parent)) return parent;
-
+    
     std::shared_ptr<Env> objEnv = make_shared<Env>(AccessFunctions);
     objEnv->Set("_this", parent);
+
+    if (auto stmt = dynamic_pointer_cast<ExpressionStatement>(TheStatement)) {
+        if (auto exp = dynamic_pointer_cast<CallExpression>(stmt->TheExpression)) {
+            objEnv->AddEnv(env);
+        }
+    }
 
     if (parent->Type() == ObjectType::NOTE) {
         objEnv->ExtendEnv(static_pointer_cast<NoteObj>(parent)->Fields);

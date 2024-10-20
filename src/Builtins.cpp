@@ -1,6 +1,7 @@
 #include "Builtins.hpp"
 
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <ios>
 #include <iostream>
@@ -19,6 +20,7 @@ std::shared_ptr<Error> CreateError(std::string format) {
     return std::make_shared<Error>(format);
 }
 
+// Builtin Functions:
 std::shared_ptr<IObject> ExitCall(const std::vector<std::shared_ptr<IObject>>& args) {
     int code = 0;
     if (!args.empty()) {
@@ -63,6 +65,56 @@ std::shared_ptr<IObject> MakeMidiObject(const std::vector<std::shared_ptr<IObjec
     return make_shared<MidiObj>();
 }
 
+std::shared_ptr<IObject> Random(const std::vector<std::shared_ptr<IObject>>& args) {
+    if (args.size() != 1 && args.size() != 2) {
+        return CreateError("wrong number of arguments. got={0}, want=1 or 2", args.size());
+    }
+    
+    // Array
+    if (args.size() == 1) {
+        if (args[0]->Type() != ObjectType::ARRAY) {
+            return CreateError("type mismatch, want ARRAY got {0}", args[0]->Type());
+        }
+
+        auto arr = static_pointer_cast<ArrayObject>(args[0]);
+        if (arr->Elements.empty()) {
+            return Env::NULLOBJ;
+        }
+
+        return arr->Elements[std::rand() % arr->Elements.size()];
+    }
+
+    // ints
+    if (args[0]->Type() != ObjectType::INTEGER || args[1]->Type() != ObjectType::INTEGER) {
+        return CreateError("type mismatch, want 2x INTEGER got {0}, {1}", args[0]->Type(), args[1]->Type());
+    }
+
+    int low = std::static_pointer_cast<Integer>(args[0])->Value;
+    int high = std::static_pointer_cast<Integer>(args[1])->Value;
+
+    if (low > high) {
+        int temp = low;
+        low = high;
+        high = low;
+    }
+
+    return std::make_shared<Integer>(std::rand() % high + low);
+}
+
+std::shared_ptr<IObject> SetRandomSeed(const std::vector<std::shared_ptr<IObject>>& args) {
+    if (args.size() != 1) {
+        return CreateError("wrong number of arguments. got={0}, want=1", args.size());
+    }
+
+    if (args[0]->Type() != ObjectType::INTEGER) {
+        return CreateError("type mismatch, want INTEGER got {0}", args[0]->Type());
+    }
+    
+    std::srand(static_pointer_cast<Integer>(args[0])->Value);
+    return Env::NULLOBJ;
+}
+
+// Access Function:
 std::shared_ptr<IObject> Type(std::shared_ptr<IObject> self, const std::vector<std::shared_ptr<IObject>>& args) {
     return make_shared<StringObj>(fmt::format("{0}", self->Type()));
 }
@@ -81,15 +133,22 @@ std::shared_ptr<IObject> AddNote(std::shared_ptr<IObject> self, const std::vecto
     }
 
     auto midi = static_pointer_cast<MidiObj>(self);
-    int note_duration_tick = TICKS_PER_QUARTER * 4 / static_pointer_cast<Integer>(args[1])->Value;
-    midi->Notes.push_back(MidiNoteEvent(
-        static_pointer_cast<Integer>(args[0])->Value,
-        static_pointer_cast<Integer>(args[2])->Value,
-        midi->currentTime, true));
+    int note = static_pointer_cast<Integer>(args[0])->Value;
+    int time = static_pointer_cast<Integer>(args[1])->Value;
+    int velocity = static_pointer_cast<Integer>(args[2])->Value;
 
-    midi->Notes.push_back(MidiNoteEvent(
-        static_pointer_cast<Integer>(args[0])->Value, 0,
-        midi->currentTime + note_duration_tick, false));
+    if (note < 0 || note > 127) {
+        return CreateError("the value of a note must be between 0 and 127, got={0}", note);
+    }
+
+    if (velocity < 0 || velocity > 127) {
+        return CreateError("the value of a velocity must be between 0 and 127, got={0}", velocity);
+    }
+
+    int note_duration_tick = TICKS_PER_QUARTER * 4 / time;
+
+    midi->Notes.push_back(MidiNoteEvent(note, velocity, midi->currentTime, true));
+    midi->Notes.push_back(MidiNoteEvent(note, 0, midi->currentTime + note_duration_tick, false));
 
     return Env::NULLOBJ;
 }
