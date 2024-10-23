@@ -25,7 +25,15 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(fmt)
 
 # Add source to this project's executable.
-add_executable (MusicLang  "main.cpp" "src/Lexer.cpp" "src/Parser.cpp" "src/Enviroment.cpp" "src/Builtins.cpp" "src/Ast.cpp" "src/Evaluator.cpp")
+add_executable (MusicLang  "main.cpp" 
+                           "src/Lexer.cpp" 
+                           "src/Parser.cpp" 
+                           "src/Enviroment.cpp" 
+                           "src/Builtins.cpp" 
+                           "src/Ast.cpp" 
+                           "src/Evaluator.cpp" 
+                           "src/Benchmark.cpp")
+
 target_link_libraries(MusicLang PRIVATE fmt)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

@@ -19,6 +19,7 @@ class Env {
     shared_ptr<Env> Outer;
 
     shared_ptr<IObject> Get(string name);
+    void Remove(string name);
     shared_ptr<IObject> Set(string name, shared_ptr<IObject> val);
     shared_ptr<IObject> Set(string name, shared_ptr<IObject> index, shared_ptr<IObject> assignVal);
 

@@ -10,6 +10,7 @@
 #include "Lexer.hpp"
 #include "Object.hpp"
 #include "Parser.hpp"
+#include "Benchmark.hpp"
 
 const int FILE_ERROR = 144;
 
@@ -90,7 +91,7 @@ int RunFile(std::string fileName) {
     if (fin->Type() == ObjectType::ERROR) {
         std::cout << fin->Inspect() << std::endl;
     }
-
+    
     return 0;
 }
 
@@ -107,12 +108,16 @@ int main(int argc, char* argv[]) {
     std::srand(std::time(0));
     
     if (args.empty() || args[0] == "--help") {
-        PrintHelp();
         return 0;
     }
 
     if (args[0] == "--repl") {
         return Repl();
+    }
+
+    if (args[0] == "--benchmark") {
+        Benchmark(1000000);
+        return 0;
     }
 
     int code = RunFile(args[0]);

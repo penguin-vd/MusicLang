@@ -53,6 +53,13 @@ std::shared_ptr<IObject> Env::Get(std::string name) {
 
     return Store[name];
 }
+
+void Env::Remove(std::string name) {
+    if (Store.find(name) != Store.end()) {
+        Store.erase(name);
+    }
+}
+
 std::shared_ptr<IObject> Env::GetHashObject(std::string name,
                                             std::shared_ptr<IHashable> index) {
     if (Store.find(name) == Store.end()) {

@@ -220,19 +220,19 @@ std::shared_ptr<IObject> ForIterative::Evaluate(std::shared_ptr<Env> env) {
 std::shared_ptr<IObject> ForExpression::Evaluate(std::shared_ptr<Env> env) {
     auto array = this->Iterative->Evaluate(env);
     if (auto arrayObj = dynamic_pointer_cast<ArrayObject>(array)) {
-        auto arrEnv = NewEnclosedEnviroment(env);
         for (size_t i = 0; i < arrayObj->Elements.size(); ++i) {
-            arrEnv->Set(this->Iterative->Index->Value, arrayObj->Elements[i]);
-            auto res = this->Body->Evaluate(arrEnv);
+            env->Set(this->Iterative->Index->Value, arrayObj->Elements[i]);
+            auto res = this->Body->Evaluate(env);
             if (res->Type() == ObjectType::BREAK) break;
         }
+        env->Remove(this->Iterative->Index->Value);
     } else if (auto iter = dynamic_pointer_cast<IterObj>(array)) {
-        auto iterEnv = NewEnclosedEnviroment(env);
         for (int i = iter->Low; i < iter->High; i += iter->Steps) {
-            iterEnv->Set(this->Iterative->Index->Value, make_shared<Integer>(i));
-            auto res = this->Body->Evaluate(iterEnv);
+            env->Set(this->Iterative->Index->Value, make_shared<Integer>(i));
+            auto res = this->Body->Evaluate(env);
             if (res->Type() == ObjectType::BREAK) break;
         }
+        env->Remove(this->Iterative->Index->Value);
     } else {
         return std::make_shared<Error>(fmt::format("at {0}, for does not support type {1}", this->TheToken.LineNumber, array->Type()));
     }
